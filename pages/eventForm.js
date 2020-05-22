@@ -41,7 +41,7 @@ function CreateEvent() {
 
   const router = useRouter();
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     const { name } = e.target;
     console.log("target", name);
     e.preventDefault();

@@ -8,27 +8,27 @@ function CalendarComponent({ events, setWeek, week }) {
   const [date, setDate] = useState();  
 
   const CustomToolbar = (toolbar) => {
-    setDate(toolbar.date)  
+    // setDate(toolbar.date)  
     const goToBack = () => { toolbar.onNavigate('PREV'); };
     const goToNext = () => { toolbar.onNavigate('NEXT'); };
     const goToCurrent = () => { toolbar.onNavigate('TODAY'); };
 
-    useEffect(() => {
-      setDate(toolbar.date)
-    }, [toolbar.date])
+    // useEffect(() => {
+    //   setDate(toolbar.date)
+    // }, [toolbar.date])
   
-    useEffect(() => {
-      if (!moment(date).isSame(week, 'week')) {
-        setWeek(moment(date).week())
-      }
-    }, [date])
+    // useEffect(() => {
+    //   if (!moment(date).isSame(week, 'week')) {
+    //     setWeek(moment(date).week())
+    //   }
+    // }, [date])
 
     return (
       <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'center' }}>
         <Header as="h3">
-          {moment(date).format('MMM')}
+          {moment(toolbar.date).format('MMM')}
           {' '}
-          {moment(date).format('YYYY')}
+          {moment(toolbar.date).format('YYYY')}
         </Header>
         <ButtonGroup style={{ width: '40%', padding: '10px', alignSelf: 'center' }}>
           <Button icon='angle left' onClick={goToBack} />
@@ -39,12 +39,12 @@ function CalendarComponent({ events, setWeek, week }) {
     );
   }
   
-  if (!(events || []).length) return null;
-
+  // if (!(events || []).length) return null;
+  const calendarEvents = [];
   return (
     <Calendar
       localizer={localizer}
-      events={events || []}
+      events={calendarEvents}
       startAccessor="start"
       endAccessor="end"
       defaultView={Views.WEEK}

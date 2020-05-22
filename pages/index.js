@@ -9,8 +9,6 @@ function Home() {
   const [week, setWeek] = useState(moment().week());
   const [events, setEvents] = useState();
 
-  console.log("HOME", week, events)
-
   async function getEvents() {
     // fetch data on server
     const url = `${baseUrl}/api/events`;
@@ -20,9 +18,9 @@ function Home() {
         end: moment(week).endOf('week')
       }
     };
-    const response = await axios.get(url, payload);
+    // const response = await axios.get(url, payload);
     // return response data as an object
-    const events = (response && response.data) || [];
+    const events = [];
     return events;
     // note this object will be merged with existing props
   }
