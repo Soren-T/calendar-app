@@ -1,20 +1,44 @@
-// import React from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { Header, Divider } from 'semantic-ui-react';
+import Calendar from '../Components/Calendar.js';
+import baseUrl from '../utils/baseUrl.js';
+import moment from 'moment';
 
-function Home({ events }) {
-  console.log("EVENTS", events)
+function Home() {
+  const [week, setWeek] = useState(moment().week());
+  const [events, setEvents] = useState();
 
-  return <>home</>;
-}
+  console.log("HOME", week, events)
 
-Home.getInitialProps = async () => {
-  // fetch data on server
-  const url = 'http://localhost:3000/api/events';
-  const response = await axios.get(url);
-  // return response data as an object
-  const events = (response && response.data) || { poop: 'poop'};
-  return { events };
-  // note this object will be merged with existing props
+  async function getEvents() {
+    // fetch data on server
+    const url = `${baseUrl}/api/events`;
+    const payload = {
+      params: {        
+        start: moment(week).startOf('week'),
+        end: moment(week).endOf('week')
+      }
+    };
+    const response = await axios.get(url, payload);
+    // return response data as an object
+    const events = (response && response.data) || [];
+    return events;
+    // note this object will be merged with existing props
+  }
+
+  useEffect(() => {
+    const eventsForCurrentWeek = getEvents();
+    setEvents(eventsForCurrentWeek)
+  }, []);
+
+  return (
+    <div>
+      <Header as="h2">My Calendar</Header>
+      <Divider />
+      <Calendar events={events} setWeek={setWeek} />
+    </div>
+  );
 }
 
 export default Home;

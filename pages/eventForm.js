@@ -1,8 +1,8 @@
 import { Form, Input, TextArea, Button, Radio, Header, Message } from 'semantic-ui-react';
-import CustomCalendar from '../Components/CustomCalendar.js';
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import _ from 'lodash';
+import axios from 'axios';
 
 const DEFAULT_EVENT = {
   label: "",
@@ -46,12 +46,16 @@ function CreateEvent() {
     console.log("target", name);
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => {      
-      setEvent(DEFAULT_EVENT);
-      setEventMeta(DEFAULT_EVENT_META);
-      setLoading(false);
-      setSuccess(true);
-    }, 1000);
+    const url =`${baseUrl}/api/events`;
+    const payload = {
+      ...event,
+      ...eventMeta
+    }
+    await axios.post(ur, payload)  
+    setEvent(DEFAULT_EVENT);
+    setEventMeta(DEFAULT_EVENT_META);
+    setLoading(false);
+    setSuccess(true);
     if (name === 'close') {
       // if 'submit and close' return user to homepage/calendar
       console.log("close")
