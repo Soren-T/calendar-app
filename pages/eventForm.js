@@ -1,21 +1,45 @@
-import { Form, Input, TextArea, Button, Radio, Header, Message } from 'semantic-ui-react';
 import { useState } from 'react';
 import { useRouter } from 'next/router';
-import _ from 'lodash';
 import axios from 'axios';
+import _ from 'lodash';
+import moment from 'moment'
+
+import { Form, Input, TextArea, Button, Radio, Header, Message, Select } from 'semantic-ui-react';
+import TimeSelector from '../Components/TimeSelector';
+import DateSelector from '../Components/DateSelector';
+
+import baseUrl from '../utils/baseUrl';
 
 const DEFAULT_EVENT = {
-  label: "",
-  start: "",
-  end: "",
-  description: "",
-}
+  label: "meeting",
+  startTime: moment(),
+  endTime: moment().add(1, 'hour'),
+  description: "super fun"
+};
 
 const DEFAULT_EVENT_META = {
-  type: "",
-  start: "",
-  end: "",
-}
+  type: "Once",
+  startDate: "",
+  endDate: ""
+};
+
+const recurringOptions = [
+  {
+    key: 'daily',
+    text: 'Daily',
+    value: 'daily'
+  },
+  {
+    key: 'weekly',
+    text: 'Weekly',
+    value: 'weekly'
+  },
+  {
+    key: 'monthly',
+    text: 'Montly',
+    value: 'monthly'
+  },
+];
 
 function CreateEvent() {
   const [isRecurring, setIsRecurring] = useState(false);
@@ -25,43 +49,70 @@ function CreateEvent() {
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  function handleTimeChange(value, name) {
+    console.log('stuff', moment(value).format("h:mm a"), name)
+    if (success && _.isEqual(event, DEFAULT_EVENT)) {
+      setSuccess(false)
+    }
+    if (name.includes('Time')) {
+      setEvent((prevState) => ({ ...prevState, [name]: value }))
+    } else {
+      setEventMeta((prevState) => ({ ...prevState, [name]: value }))
+    }
+  }
+
   function handleEventChange(e) {
     const { name, value } = e.target;
-    console.log(success, _.isEmpty(event))
     if (success && _.isEqual(event, DEFAULT_EVENT)) {
       setSuccess(false)
     }
     setEvent((prevState) => ({ ...prevState, [name]: value }))
   }
 
-  function handleMetaChange(e) {
-    const { name, value } = e.target;
-    setEventMeta((prevState) => ({ ...prevState, [name]: value }))
+  // select form fields send a data object to the onChange function.
+  // that data object holds the value and name.
+  function handleMetaChange(e, data) {
+    const { name: targetName, value: targetValue } = e.target;
+    const { value: dataValue, name: dataName } = data;
+    const updateValue = targetValue || dataValue;
+    const stateName = targetName || dataName;
+    setEventMeta((prevState) => ({ ...prevState, [stateName]: updateValue }))
   }
 
   const router = useRouter();
 
-  async function handleSubmit(e) {
-    const { name } = e.target;
-    console.log("target", name);
-    e.preventDefault();
-    setLoading(true);
+  async function postEvent() {    
     const url =`${baseUrl}/api/events`;
     const payload = {
       ...event,
       ...eventMeta
     }
-    await axios.post(ur, payload)  
-    setEvent(DEFAULT_EVENT);
-    setEventMeta(DEFAULT_EVENT_META);
-    setLoading(false);
-    setSuccess(true);
-    if (name === 'close') {
-      // if 'submit and close' return user to homepage/calendar
-      console.log("close")
-      router.push('/');
-    }
+    // post event
+    const response = await axios.post(url, payload);
+    console.log('response', response);
   }
+
+  function handleSubmit(e) {
+    const { name } = e.target;
+    console.log("target", name);
+    e.preventDefault();
+    setLoading(true);
+    // post event
+    postEvent().then(
+      () => {
+        setEvent(DEFAULT_EVENT)
+        setEventMeta(DEFAULT_EVENT_META)
+        setLoading(false)
+        setSuccess(true)
+        if (name === 'close') {
+          // if 'submit and close' return user to homepage/calendar
+          router.push('/');
+        }
+      }
+    );
+  }
+
+  console.log(eventMeta.type)
 
   return(
     <>
@@ -80,19 +131,21 @@ function CreateEvent() {
             value={event.label}
             onChange={handleEventChange} />
           <Form.Field
-            control={Input}
-            name="start"
             label="Start Time"
-            placeholder="Start Time"
-            value={event.start}
-            onChange={handleEventChange} />
+            control={() => (
+              TimeSelector(
+                handleTimeChange, event.startTime, 'startTime'
+              )
+            )}
+          />
           <Form.Field
-            control={Input}
-            name="end"
             label="End Time"
-            placeholder="End Time"
-            value={event.end}
-            onChange={handleEventChange} />
+            control={() => (
+              TimeSelector(
+                handleTimeChange, event.endTime, 'endTime'
+              )
+            )}
+          />
         </Form.Group>
 
         <Form.Field>
@@ -109,26 +162,29 @@ function CreateEvent() {
             </Header>
             <Form.Group>
               <Form.Field
-                control={Input}
+                control={Select}
+                options={recurringOptions}
                 name="type"
                 label="Type"
                 placeholder="Recurring Event Type"
                 value={eventMeta.type}
                 onChange={handleMetaChange} />
               <Form.Field
-                control={Input}
-                name="start"
                 label="Start Date"
-                placeholder="Start Date"
-                value={eventMeta.start}
-                onChange={handleMetaChange} />
+                control={() => (
+                  DateSelector(
+                    handleTimeChange, eventMeta.startDate, 'startDate'
+                  )
+                )}
+              />
               <Form.Field
-                control={Input}
-                name="end"
-                label="End Date"
-                placeholder="End Date"
-                value={eventMeta.end}
-                onChange={handleMetaChange} />
+                label="End Date"                
+                control={() => (
+                  DateSelector(
+                    handleTimeChange, eventMeta.endDate, 'endDate'
+                  )
+                )}
+              />
             </Form.Group>
           </>          
         )}
@@ -147,12 +203,14 @@ function CreateEvent() {
               color="blue"
               name="close"
               onClick={handleSubmit}
+              disabled={loading}
               content="Submit & Close" />
             <Button.Or />
             <Button
               color="blue"
               name="continue"
               onClick={handleSubmit}
+              disabled={loading}
               content="Submit & Create Another Event" />
           </Button.Group>
         </Form.Field>  

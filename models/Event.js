@@ -8,10 +8,12 @@ const EventSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  // hourly start time
   start: {
     type: Number,
     required: true
-  },  
+  },
+  // hourly end time
   end: {
     type: Number,
     required: true
@@ -25,11 +27,6 @@ const EventSchema = new mongoose.Schema({
     type: Boolean,
     required: true,
     default: false
-  },
-  event_id: {
-    type: String,
-    unique: true,
-    default: shortid.generate()
   }
 });
 

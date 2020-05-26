@@ -11,6 +11,8 @@
     "mongoose": "^5.9.15",
     "next": "^9.4.2",
     "nprogress": "^0.2.0",
+    "rc-datepicker": "^5.0.16",
+    "rc-time-picker": "^3.7.3",
     "react": "^16.13.1",
     "react-big-calendar": "^0.24.6",
     "react-dom": "^16.13.1",
