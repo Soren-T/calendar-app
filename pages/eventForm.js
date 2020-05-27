@@ -5,8 +5,8 @@ import _ from 'lodash';
 import moment from 'moment'
 
 import { Form, Input, TextArea, Button, Radio, Header, Message, Select } from 'semantic-ui-react';
-import TimeSelector from '../Components/TimeSelector';
-import DateSelector from '../Components/DateSelector';
+import TimeSelector from '../Components/TimeSelector.js';
+import DateSelector from '../Components/DateSelector.js';
 
 import baseUrl from '../utils/baseUrl';
 
@@ -18,7 +18,7 @@ const DEFAULT_EVENT = {
 };
 
 const DEFAULT_EVENT_META = {
-  type: "Once",
+  type: "",
   startDate: "",
   endDate: ""
 };
@@ -50,7 +50,6 @@ function CreateEvent() {
   const [loading, setLoading] = useState(false);
 
   function handleTimeChange(value, name) {
-    console.log('stuff', moment(value).format("h:mm a"), name)
     if (success && _.isEqual(event, DEFAULT_EVENT)) {
       setSuccess(false)
     }
@@ -89,12 +88,10 @@ function CreateEvent() {
     }
     // post event
     const response = await axios.post(url, payload);
-    console.log('response', response);
   }
 
   function handleSubmit(e) {
     const { name } = e.target;
-    console.log("target", name);
     e.preventDefault();
     setLoading(true);
     // post event
@@ -112,8 +109,6 @@ function CreateEvent() {
     );
   }
 
-  console.log(eventMeta.type)
-
   return(
     <>
       <Header as="h2">
@@ -130,29 +125,33 @@ function CreateEvent() {
             placeholder="Event Label"
             value={event.label}
             onChange={handleEventChange} />
-          <Form.Field
-            label="Start Time"
-            control={() => (
-              TimeSelector(
-                handleTimeChange, event.startTime, 'startTime'
-              )
-            )}
-          />
-          <Form.Field
-            label="End Time"
-            control={() => (
-              TimeSelector(
-                handleTimeChange, event.endTime, 'endTime'
-              )
-            )}
-          />
+          <Form.Field>
+            <label>Start Time</label>
+            <TimeSelector
+              handleChange={handleTimeChange}
+              value={event.startTime}
+              name={'startTime'} />
+          </Form.Field>
+          <Form.Field>
+            <label>End Time</label>
+            <TimeSelector
+              handleChange={handleTimeChange}
+              value={event.endTime}
+              name={'endTime'} />
+          </Form.Field>
         </Form.Group>
 
         <Form.Field>
           <Radio
             toggle
             label="Recurring"
-            onChange={()=> setIsRecurring(!isRecurring)} />
+            onChange={() => {
+              if (isRecurring) {
+                // if going back to not recurring set back to defaults
+                setEventMeta(DEFAULT_EVENT_META);
+              }
+              setIsRecurring(!isRecurring);
+            }} />
         </Form.Field>   
 
         {isRecurring && (
@@ -169,22 +168,22 @@ function CreateEvent() {
                 placeholder="Recurring Event Type"
                 value={eventMeta.type}
                 onChange={handleMetaChange} />
-              <Form.Field
-                label="Start Date"
-                control={() => (
-                  DateSelector(
-                    handleTimeChange, eventMeta.startDate, 'startDate'
-                  )
-                )}
-              />
-              <Form.Field
-                label="End Date"                
-                control={() => (
-                  DateSelector(
-                    handleTimeChange, eventMeta.endDate, 'endDate'
-                  )
-                )}
-              />
+              <Form.Field>
+                <label>Start Date</label>
+                <DateSelector
+                  disabled={!eventMeta.type}
+                  onChange={handleTimeChange}
+                  value={eventMeta.startDate}
+                  name={'startDate'} />
+              </Form.Field>
+              <Form.Field>
+                <label>End Date</label>
+                <DateSelector
+                  disabled={!eventMeta.type}
+                  onChange={handleTimeChange}
+                  value={eventMeta.endDate}
+                  name={'endDate'} />
+              </Form.Field>
             </Form.Group>
           </>          
         )}

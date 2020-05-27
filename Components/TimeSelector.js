@@ -1,9 +1,8 @@
-import TimePicker, { Panel } from 'rc-time-picker';
+import TimePicker from 'rc-time-picker';
 import moment from 'moment';
 import { useState } from 'react';
 
-function TimeSelector(handleChange, value, name) {
-  const [open, setOpen] = useState(false);  
+function TimeSelector({ handleChange, value, name }) {
   const [time, setTime] = useState(moment(value));
 
   return (     
@@ -16,7 +15,7 @@ function TimeSelector(handleChange, value, name) {
       format={'h:mm a'}
       use12Hours
     />
-  )
+  );
 }
 
 export default TimeSelector;

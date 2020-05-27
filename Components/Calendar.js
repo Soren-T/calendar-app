@@ -1,27 +1,37 @@
 import { Calendar, Views, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
-import { Header, ButtonGroup, Button } from 'semantic-ui-react';
+import { Header, ButtonGroup, Button, Dimmer, Loader } from 'semantic-ui-react';
 import { useState, useEffect } from 'react';
 
-function CalendarComponent({ events, setWeek, week }) {
+function CalendarComponent({ events, setDate, date }) {
   const localizer = momentLocalizer(moment);
-  const [date, setDate] = useState();  
+  const [calendarEvents, setCalendarEvents] = useState([]);
+  
+  useEffect(() => {
+    let data = [];
+      if (events && events.length) {
+        data = events.map(e => ({
+          ...e,
+          start: moment.unix(e.start).toDate(),
+          end: moment.unix(e.end).toDate()
+        }));
+      }
+      setCalendarEvents(data);
+  }, [events])
 
   const CustomToolbar = (toolbar) => {
-    // setDate(toolbar.date)  
-    const goToBack = () => { toolbar.onNavigate('PREV'); };
-    const goToNext = () => { toolbar.onNavigate('NEXT'); };
-    const goToCurrent = () => { toolbar.onNavigate('TODAY'); };
-
-    // useEffect(() => {
-    //   setDate(toolbar.date)
-    // }, [toolbar.date])
-  
-    // useEffect(() => {
-    //   if (!moment(date).isSame(week, 'week')) {
-    //     setWeek(moment(date).week())
-    //   }
-    // }, [date])
+    const goToBack = () => {
+      setDate(moment(date).subtract(1, 'week'));
+      toolbar.onNavigate('PREV');
+    };
+    const goToNext = () => {
+      setDate(moment(date).add(1, 'week'));
+      toolbar.onNavigate('NEXT');
+    };
+    const goToCurrent = () => {
+      setDate(moment());
+      toolbar.onNavigate('TODAY');
+    };
 
     return (
       <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'center' }}>
@@ -38,21 +48,24 @@ function CalendarComponent({ events, setWeek, week }) {
       </div>
     );
   }
-  
-  // if (!(events || []).length) return null;
-  const calendarEvents = [];
+
   return (
-    <Calendar
-      localizer={localizer}
-      events={calendarEvents}
-      startAccessor="start"
-      endAccessor="end"
-      defaultView={Views.WEEK}
-      views={[ Views.WEEK ]}
-      components={{
-        toolbar: CustomToolbar
-      }}
-      style={{ heigth: "90vh" }} />
+    <>
+      <Dimmer active={!events}>
+        <Loader />
+      </Dimmer>      
+      <Calendar
+        localizer={localizer}
+        events={calendarEvents || []}
+        startAccessor="start"
+        endAccessor="end"
+        defaultView={Views.WEEK}
+        views={[ Views.WEEK ]}
+        components={{
+          toolbar: CustomToolbar
+        }}
+        style={{ heigth: "90vh" }} />
+    </>
   );
 }
 

@@ -1,25 +1,15 @@
-import { DatePicker, DatePickerInput } from 'rc-datepicker';
+import DatePicker from 'react-datepicker';
 import moment from 'moment';
 import { useState } from 'react';
 
-function DateSelector(handleChange, value, name) { 
-  const [date, setDate] = useState(moment(value));
-
-  return (     
-    <>
-      <DatePickerInput
-        displayFormat='DD/MM/YYYY'
-        returnFormat='YYYY-MM-DD'
-        value={date}
-        onChange={() => handleChange(date, name)}
-      />
-
-      <DatePicker
-        locale='es'
-        onChange={() => handleChange(date, name)}
-        value={date} />
-    </>
-  )
+function DateSelector({ handleChange, value, name, disabled }) {
+  const [date, setDate] = useState(new Date());
+  return (    
+    <DatePicker
+      selected={date}
+      disabled={disabled}
+      onChange={(d) => setDate(d)} />
+  );
 }
 
 export default DateSelector;

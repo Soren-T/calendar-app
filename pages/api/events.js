@@ -7,7 +7,6 @@ import moment from 'moment';
 connectDb();
 
 export default async(req, res) => {
-  console.log("method", req.method);
   switch(req.method) {
     case 'GET': 
       await handleGetRequest(req, res);
@@ -32,20 +31,20 @@ export default async(req, res) => {
   async function handleGetRequest(req, res) {
     const { start, end } = req.query;
     // retrieve all events
-    const events = await Event.find();
+    // const response = await Event.find();
     // retrieve all events in a specific week
-    // const events = await Event.find(
-    //   { start: { $gt: start, $lt: end } }
-    // )
-    res.status(200).json(events);
+    const response = await Event.find(
+      { start: { $gt: start, $lt: end } }
+    )
+    res.status(200).json(response);
   }
 
-  async function postEventMeta(res, meta) {
-    console.log('response', res);
+  async function postEventMeta(res, eventMeta) {
     const { _id, start, is_recurring } = res.data;
-    const { type, startDate, endDate } = meta;
+    const { type, startDate, endDate } = eventMeta;
     // default for interval_count = 1 which means the even only happens once.
-    let interval_count = 1
+    let interval_count = 1;
+    let interval_start = moment(startDate);
     if (is_recurring) {
       switch(type) {
         case 'daily':
@@ -62,21 +61,21 @@ export default async(req, res) => {
       }
     }
     const keyStart = startDate ? startDate : start;
-    const meta = {
+    const payload = {
       event_id: _id,
       interval: type,
+      interval_start,
       interval_count,
     };
     const meta = await new EventMeta({
-      ...meta
+      ...payload
     });
     res.status(201).json(meta);
-    console.log(meta);
   }
 
   async function postEvent (event) {
-    const event = await new Event({ ...event }).save();
-    res.status(201).json(event);
+    const response = await new Event({ ...event }).save();
+    res.status(201).json(response.data);
   }
 
   async function handlePostRequest(req, res) {
